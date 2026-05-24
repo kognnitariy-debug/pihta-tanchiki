@@ -26,8 +26,60 @@ button:disabled {
 }
 
 .app {
+  position: relative;
   min-height: 100vh;
   background: #050505;
+}
+
+.audio-toggle {
+  position: fixed;
+  top: 18px;
+  right: 18px;
+  z-index: 20;
+  border: 3px solid #3c2a17;
+  padding: 9px 12px;
+  color: #3c2a17;
+  background: #e4bd6d;
+  box-shadow: 4px 4px 0 rgba(60, 42, 23, 0.55);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+  image-rendering: pixelated;
+}
+
+.audio-toggle:hover {
+  background: #ffd447;
+}
+
+.audio-toggle-muted {
+  color: #fff1c7;
+  background: #6f3d1c;
+}
+
+.audio-toggle-muted:hover {
+  background: #7f4520;
+}
+
+.credits-toggle {
+  position: fixed;
+  top: 18px;
+  right: 134px;
+  z-index: 20;
+  border: 3px solid #f5f0df;
+  padding: 9px 12px;
+  color: #f5f0df;
+  background: #050505;
+  box-shadow: 4px 4px 0 rgba(245, 240, 223, 0.2);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  image-rendering: pixelated;
+}
+
+.credits-toggle:hover {
+  color: #050505;
+  background: #f5f0df;
 }
 
 .screen {
@@ -175,32 +227,142 @@ h1 {
   height: 10px;
 }
 
+.credits-screen {
+  width: 100%;
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  place-items: center;
+  align-content: center;
+  gap: 24px;
+  padding: 48px 24px;
+  color: #f5f0df;
+  background: #050505;
+}
+
+.credits-back-button {
+  position: fixed;
+  left: 18px;
+  top: 18px;
+  z-index: 20;
+  border: 3px solid #f5f0df;
+  padding: 9px 12px;
+  color: #f5f0df;
+  background: transparent;
+  box-shadow: 4px 4px 0 rgba(245, 240, 223, 0.2);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.credits-back-button:hover {
+  color: #050505;
+  background: #f5f0df;
+}
+
+.credits-stage {
+  display: grid;
+  place-items: center;
+  width: min(86vw, 820px);
+  aspect-ratio: 1457 / 1080;
+  max-height: 56vh;
+  transform: translateY(-10px);
+}
+
+.credits-frame {
+  width: 100%;
+  height: 100%;
+  border: 6px solid #f5f0df;
+  object-fit: contain;
+  object-position: center;
+  image-rendering: pixelated;
+  box-shadow:
+    0 0 0 6px #050505,
+    0 0 0 10px rgba(245, 240, 223, 0.6);
+  animation: credits-frame-fade 5.2s ease-in-out infinite;
+}
+
+.credits-caption {
+  min-height: 88px;
+  width: min(86vw, 820px);
+  transform: translateY(20px);
+  color: #f5f0df;
+  font-size: clamp(18px, 3vw, 30px);
+  font-weight: 700;
+  line-height: 1.35;
+  text-align: center;
+  text-transform: uppercase;
+  text-shadow: 3px 3px 0 #2b2117;
+}
+
+.credits-caret {
+  display: inline-block;
+  margin-left: 4px;
+  animation: credits-caret-blink 0.7s steps(1) infinite;
+}
+
+@keyframes credits-frame-fade {
+  0% {
+    opacity: 0;
+    filter: brightness(0.4);
+    transform: scale(0.98);
+  }
+
+  14%,
+  78% {
+    opacity: 1;
+    filter: brightness(1);
+    transform: scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    filter: brightness(0.38);
+    transform: scale(0.985);
+  }
+}
+
+@keyframes credits-caret-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
 .game-screen {
   display: grid;
-  grid-template-columns: minmax(140px, 1fr) minmax(320px, 620px) minmax(140px, 1fr);
+  grid-template-columns: minmax(220px, 280px) minmax(380px, 760px) minmax(220px, 280px);
   align-items: center;
-  gap: 24px;
+  justify-content: center;
+  gap: 20px;
+  width: min(1540px, 100%);
+  background:
+    linear-gradient(rgba(5, 5, 5, 0.28), rgba(5, 5, 5, 0.38)),
+    url('/assets/game-yard-bg.png') center / cover;
+  box-shadow: inset 0 0 0 6px rgba(255, 212, 71, 0.18);
 }
 
 .player-panel {
   position: relative;
-  min-height: 420px;
+  width: 100%;
+  min-height: 620px;
   border: 4px solid #3c2a17;
-  padding: 18px;
+  padding: 14px;
   background:
-    linear-gradient(18deg, rgba(79, 53, 26, 0.12) 1px, transparent 2px),
-    linear-gradient(-12deg, rgba(255, 231, 166, 0.14) 1px, transparent 2px),
-    url('/assets/sand-field.png');
-  background-size: 30px 30px, 38px 38px, 260px 260px;
+    linear-gradient(rgba(43, 33, 23, 0.14), rgba(43, 33, 23, 0.03)),
+    url('/assets/sand-field.png') center / cover;
   box-shadow: 6px 6px 0 rgba(60, 42, 23, 0.35);
   image-rendering: pixelated;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 12px;
 }
 
 .player-decoration {
   display: block;
-  width: min(72%, 160px);
-  height: 92px;
-  margin: -4px auto 8px;
+  width: min(68%, 128px);
+  height: 72px;
+  margin: 0 auto;
   object-fit: contain;
   image-rendering: pixelated;
   filter: drop-shadow(5px 5px 0 rgba(60, 42, 23, 0.42));
@@ -220,70 +382,97 @@ h1 {
   box-shadow: 0 0 0 6px rgba(255, 241, 199, 0.45), 8px 8px 0 rgba(60, 42, 23, 0.5);
 }
 
+.player-card {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 8px 6px 10px;
+  border: 3px solid rgba(60, 42, 23, 0.75);
+  background: rgba(255, 235, 184, 0.48);
+  box-shadow: inset 0 0 0 4px rgba(94, 59, 24, 0.12);
+}
+
+.player-avatar {
+  width: 144px;
+  height: 144px;
+  border: 4px solid #e4bd6d;
+  object-fit: cover;
+  object-position: center;
+  image-rendering: pixelated;
+  box-shadow:
+    0 0 0 3px rgba(60, 42, 23, 0.38),
+    4px 4px 0 rgba(60, 42, 23, 0.28);
+  background: #5f7f37;
+}
+
 .player-panel h2 {
-  font-size: 24px;
+  color: #3c2a17;
+  font-size: 22px;
   text-align: center;
 }
 
-.figure-table {
-  display: grid;
-  gap: 10px;
-  margin: 18px 0 0;
-  padding: 0;
-  list-style: none;
+.player-score {
+  border: 2px solid rgba(60, 42, 23, 0.62);
+  padding: 4px 10px;
+  color: #254b1d;
+  background: rgba(255, 241, 199, 0.58);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.1;
+  text-align: center;
 }
 
-.figure-row {
+.player-sand-board {
   display: grid;
-  grid-template-columns: 46px 1fr 36px;
+  grid-template-rows: repeat(8, minmax(44px, 1fr));
+  gap: 4px;
+  min-height: 390px;
+  padding: 10px 12px;
+  border: 3px dashed rgba(60, 42, 23, 0.52);
+  background:
+    linear-gradient(rgba(255, 235, 184, 0.18), rgba(60, 42, 23, 0.08)),
+    url('/assets/sand-field.png') center / cover;
+  box-shadow: inset 0 0 0 6px rgba(255, 235, 184, 0.12);
+}
+
+.sand-rune-row {
+  display: flex;
   align-items: center;
-  gap: 10px;
-  min-height: 42px;
-  border-bottom: 2px dashed rgba(60, 42, 23, 0.35);
+  gap: 8px;
+  min-height: 44px;
+  border-bottom: 2px solid rgba(60, 42, 23, 0.12);
+  padding: 2px 4px;
+  background: transparent;
+  overflow: hidden;
 }
 
 .figure-symbol {
+  min-width: 26px;
   color: #5a321a;
+  font-size: 30px;
   font-weight: 700;
 }
 
-.figure-icon {
-  width: 36px;
-  height: 36px;
+.figure-mark {
+  width: 56px;
+  height: 48px;
   object-fit: contain;
+  object-position: center;
   image-rendering: pixelated;
-  filter: drop-shadow(2px 2px 0 rgba(60, 42, 23, 0.35));
-}
-
-.figure-name {
-  font-weight: 700;
-}
-
-.figure-count {
-  text-align: right;
-  font-size: 22px;
-  font-weight: 700;
+  filter: none;
 }
 
 .game-center {
   display: grid;
   justify-items: center;
-  gap: 20px;
-}
-
-.turn-label {
-  border: 3px solid #3c2a17;
-  padding: 10px 16px;
-  background: rgba(255, 235, 184, 0.86);
-  font-size: 22px;
-  font-weight: 700;
-  box-shadow: 4px 4px 0 rgba(60, 42, 23, 0.35);
+  width: 100%;
+  gap: 14px;
 }
 
 .sand-field {
   position: relative;
   overflow: hidden;
-  width: min(78vw, 560px);
+  width: min(82vw, 740px);
   aspect-ratio: 1;
   border: 6px solid #3c2a17;
   background: url('/assets/sand-field.png') center / cover;
@@ -295,12 +484,26 @@ h1 {
   position: absolute;
   left: var(--drop-x, 50%);
   top: var(--drop-y, 50%);
-  width: min(42vw, 260px);
+  width: min(44vw, 300px);
   max-height: 70%;
   object-fit: contain;
   transform: translate(-50%, -50%);
   image-rendering: pixelated;
   filter: drop-shadow(6px 6px 0 rgba(52, 35, 19, 0.35));
+  z-index: 1;
+}
+
+.fallen-knife {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(50vw, 392px);
+  max-width: 60%;
+  max-height: 50%;
+  object-fit: contain;
+  transform: translate(-50%, -50%);
+  image-rendering: pixelated;
+  filter: drop-shadow(6px 6px 0 rgba(52, 35, 19, 0.28));
   z-index: 1;
 }
 
@@ -317,20 +520,86 @@ h1 {
   font-weight: 700;
 }
 
-.throw-zone {
-  min-height: 190px;
+.result-card {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 6;
   display: grid;
   justify-items: center;
-  align-content: start;
-  gap: 14px;
+  align-items: center;
+  gap: 10px;
+  width: min(340px, 78vw);
+  min-height: min(340px, 78vw);
+  aspect-ratio: 1;
+  padding: 16px;
+  border: 4px solid rgba(60, 42, 23, 0.72);
+  background:
+    linear-gradient(rgba(255, 235, 184, 0.28), rgba(60, 42, 23, 0.08)),
+    url('/assets/sand-field.png') center / cover;
+  box-shadow:
+    inset 0 0 0 6px rgba(255, 235, 184, 0.16),
+    7px 7px 0 rgba(60, 42, 23, 0.42);
+  transform: translate(-50%, -50%) scale(0.92);
+  animation: result-card-pop 1.5s ease-in-out forwards;
+  pointer-events: none;
+}
+
+.result-card-rune {
+  width: min(300px, 68vw);
+  height: min(224px, 50vw);
+  object-fit: cover;
+  object-position: center;
+  image-rendering: pixelated;
+}
+
+.result-card p {
+  color: #3c2a17;
+  font-size: clamp(28px, 5vw, 42px);
+  font-weight: 700;
+  line-height: 1;
+  text-transform: uppercase;
+  text-shadow: 2px 2px 0 rgba(255, 235, 184, 0.55);
+}
+
+@keyframes result-card-pop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -42%) scale(0.84);
+  }
+
+  16%,
+  72% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -58%) scale(0.94);
+  }
+}
+
+.throw-zone {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  width: min(100%, 420px);
+}
+
+.throw-zone-top {
+  min-height: 74px;
+  align-content: center;
 }
 
 .message-box {
+  width: min(100%, 640px);
   min-height: 86px;
   text-align: center;
   padding: 10px 14px;
   border: 3px dashed rgba(60, 42, 23, 0.45);
-  background: rgba(255, 235, 184, 0.45);
+  background: rgba(255, 235, 184, 0.82);
+  box-shadow: 5px 5px 0 rgba(60, 42, 23, 0.35);
 }
 
 .throw-message {
@@ -370,12 +639,13 @@ h1 {
     min-height: 120px;
   }
 
-  .figure-table {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .player-sand-board {
+    min-height: 320px;
   }
 
-  .figure-row {
-    grid-template-columns: 44px 1fr 28px;
+  .figure-mark {
+    width: 54px;
+    height: 44px;
   }
 
   .start-screen::after {

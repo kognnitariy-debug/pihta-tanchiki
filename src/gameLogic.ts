@@ -6,7 +6,7 @@ export const FIGURES = [
   'Вертолёт',
   'Корпус',
   'Армия',
-  'Бог',
+  'Бомба',
 ] as const;
 
 export type Figure = (typeof FIGURES)[number];
@@ -24,10 +24,24 @@ export type GameState = {
   mergeMessages: string[];
   lastDroppedFigure: Figure | null;
   lastDropPosition: DropPosition | null;
+  lastThrowFailed: boolean;
   winner: PlayerId | null;
 };
 
 type RollResult = Figure | 'Ноль';
+
+export const FIGURE_SCORE_VALUES: Record<Figure, number> = {
+  Пихта: 1,
+  Танчик: 4,
+  Самолёт: 16,
+  Подвода: 64,
+  Вертолёт: 256,
+  Корпус: 1024,
+  Армия: 4096,
+  Бомба: 16384,
+};
+
+export const MAX_SCORE = FIGURE_SCORE_VALUES['Бомба'];
 
 const FIGURE_SYMBOLS: Record<Figure, string> = {
   Пихта: '|',
@@ -37,7 +51,7 @@ const FIGURE_SYMBOLS: Record<Figure, string> = {
   Вертолёт: '-O-',
   Корпус: '[#]',
   Армия: 'XXX',
-  Бог: '*',
+  Бомба: '*',
 };
 
 const ROLL_TABLE: Array<{ result: RollResult; chance: number }> = [
@@ -58,6 +72,7 @@ export function createInitialGameState(): GameState {
     mergeMessages: [],
     lastDroppedFigure: null,
     lastDropPosition: null,
+    lastThrowFailed: false,
     winner: null,
   };
 }
@@ -79,6 +94,7 @@ export function throwKnife(state: GameState): GameState {
       mergeMessages: [],
       lastDroppedFigure: null,
       lastDropPosition: null,
+      lastThrowFailed: true,
     };
   }
 
@@ -90,7 +106,7 @@ export function throwKnife(state: GameState): GameState {
 
   currentCounts[result] += 1;
   const mergeMessages = mergeFigures(currentCounts);
-  const winner = currentCounts['Бог'] >= 1 ? state.currentPlayer : null;
+  const winner = currentCounts['Бомба'] >= 1 ? state.currentPlayer : null;
 
   return {
     ...state,
@@ -98,10 +114,11 @@ export function throwKnife(state: GameState): GameState {
     message:
       winner === null
         ? `Выпало: ${result}. Можно метать ещё.`
-        : `Игрок ${state.currentPlayer + 1} собрал Бога и победил!`,
+        : `Игрок ${state.currentPlayer + 1} собрал Бомбу и победил!`,
     mergeMessages,
     lastDroppedFigure: result,
     lastDropPosition: createDropPosition(),
+    lastThrowFailed: false,
     winner,
   };
 }
@@ -120,12 +137,19 @@ export function passTurn(state: GameState): GameState {
     mergeMessages: [],
     lastDroppedFigure: null,
     lastDropPosition: null,
+    lastThrowFailed: false,
   };
 }
 
 export function getFigureSymbol(figure: Figure): string {
   // Здесь позже можно заменить текстовые символы рисунками ножом на песке.
   return FIGURE_SYMBOLS[figure];
+}
+
+export function calculateScore(counts: FigureCounts): number {
+  return FIGURES.reduce((score, figure) => {
+    return score + counts[figure] * FIGURE_SCORE_VALUES[figure];
+  }, 0);
 }
 
 function createEmptyCounts(): FigureCounts {
@@ -193,7 +217,7 @@ function getPluralFigureName(figure: Figure): string {
     Вертолёт: 'Вертолёта',
     Корпус: 'Корпуса',
     Армия: 'Армии',
-    Бог: 'Бога',
+    Бомба: 'Бомбы',
   };
 
   return names[figure];

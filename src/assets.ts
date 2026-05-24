@@ -1,10 +1,14 @@
 import type { Figure } from './gameLogic';
 
 export const ASSETS = {
+  gameYardBg: '/assets/game-yard-bg.png',
   sandField: '/assets/sand-field.png',
   knife: '/assets/knife-pihta.png',
   startYard: '/assets/start-yard.png',
   tank: '/assets/tank-8bit.png',
+  playerOne: '/assets/player1.jpg',
+  playerTwo: '/assets/player2.jpg',
+  fallenKnife: '/assets/field-knife-fallen.png',
 };
 
 // Отдельные картинки фигур, которые выпадают на поле.
@@ -17,17 +21,31 @@ export const FIELD_FIGURE_IMAGES: Partial<Record<Figure, string>> = {
   Вертолёт: '/assets/field-helicopter.png',
   Корпус: '/assets/field-corps.png',
   Армия: '/assets/field-army.png',
+  Бомба: '/assets/field-army.png',
 };
 
 // Эти placeholder-файлы потом можно заменить на реальные pixel-art изображения
 // с теми же именами в public/assets.
 export const FIGURE_IMAGES: Record<Figure, string> = {
-  Пихта: '/assets/symbol-pihta.png',
-  Танчик: '/assets/symbol-tank.png',
-  Самолёт: '/assets/symbol-plane.png',
-  Подвода: '/assets/symbol-cart.png',
-  Вертолёт: '/assets/symbol-helicopter.png',
-  Корпус: '/assets/symbol-corps.png',
-  Армия: '/assets/symbol-army.png',
-  Бог: '/assets/symbol-god.png',
+  Пихта: '/assets/runes/processed/pichta.png',
+  Танчик: '/assets/runes/processed/tanchik.png',
+  Самолёт: '/assets/runes/processed/samolet.png',
+  Подвода: '/assets/runes/processed/podvoda.png',
+  Вертолёт: '/assets/runes/processed/vertolet.png',
+  Корпус: '/assets/runes/processed/corpus.png',
+  Армия: '/assets/runes/processed/army.png',
+  Бомба: '/assets/runes/processed/b.png',
+};
+
+// Исходники рун с песочной текстурой: используем их для всплывающей карточки
+// результата, чтобы окно выглядело как рисунок прямо на песке.
+export const RESULT_RUNE_IMAGES: Record<Figure, string> = {
+  Пихта: '/assets/runes/pichta.png',
+  Танчик: '/assets/runes/tanchik.png',
+  Самолёт: '/assets/runes/samolet.png',
+  Подвода: '/assets/runes/podvoda.png',
+  Вертолёт: '/assets/runes/vertolet.png',
+  Корпус: '/assets/runes/corpus.png',
+  Армия: '/assets/runes/army.png',
+  Бомба: '/assets/runes/b.png',
 };

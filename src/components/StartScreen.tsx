@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ASSETS } from '../assets';
-import { AUDIO_ASSETS, playSoundsInOrder } from '../audio';
+import { AUDIO_ASSETS, playSound } from '../audio';
 import { PixelTank } from './PixelTank';
 
 type StartScreenProps = {
@@ -11,7 +11,7 @@ export function StartScreen({ onStart }: StartScreenProps) {
   const [showTankFallback, setShowTankFallback] = useState(false);
 
   function handleStart() {
-    playSoundsInOrder([AUDIO_ASSETS.intro, AUDIO_ASSETS.startThrow]);
+    playSound(AUDIO_ASSETS.startThrow);
     onStart();
   }
 
