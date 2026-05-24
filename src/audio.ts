@@ -1,6 +1,7 @@
 import type { Figure } from './gameLogic';
 
 let audioMuted = false;
+const audioCache = new Map<string, HTMLAudioElement>();
 
 export const AUDIO_ASSETS = {
   intro: '/assets/audio/intro-sound.m4a',
@@ -26,6 +27,26 @@ export function setAudioMuted(isMuted: boolean) {
   audioMuted = isMuted;
 }
 
+export function isAudioMuted() {
+  return audioMuted;
+}
+
+export function preloadAudio(sources: Array<string | undefined>) {
+  if (typeof Audio === 'undefined') {
+    return;
+  }
+
+  sources.forEach((src) => {
+    if (!src || audioCache.has(src)) {
+      return;
+    }
+
+    const audio = new Audio(src);
+    audio.preload = 'auto';
+    audioCache.set(src, audio);
+  });
+}
+
 export function playRandomSound(sources: string[]) {
   if (audioMuted || sources.length === 0) {
     return;
@@ -36,11 +57,12 @@ export function playRandomSound(sources: string[]) {
 }
 
 export function playSound(src: string | undefined) {
-  if (audioMuted || !src) {
+  if (audioMuted || !src || typeof Audio === 'undefined') {
     return;
   }
 
-  const audio = new Audio(src);
+  const cachedAudio = audioCache.get(src);
+  const audio = cachedAudio ? (cachedAudio.cloneNode(true) as HTMLAudioElement) : new Audio(src);
   audio.currentTime = 0;
 
   // Браузер может запретить звук без клика пользователя. Для MVP просто молча
@@ -55,12 +77,13 @@ export async function playSoundsInOrder(sources: Array<string | undefined>) {
 }
 
 function playSoundAndWait(src: string | undefined) {
-  if (audioMuted || !src) {
+  if (audioMuted || !src || typeof Audio === 'undefined') {
     return Promise.resolve();
   }
 
   return new Promise<void>((resolve) => {
-    const audio = new Audio(src);
+    const cachedAudio = audioCache.get(src);
+    const audio = cachedAudio ? (cachedAudio.cloneNode(true) as HTMLAudioElement) : new Audio(src);
 
     audio.addEventListener('ended', () => resolve(), { once: true });
     audio.addEventListener('error', () => resolve(), { once: true });

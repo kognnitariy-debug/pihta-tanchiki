@@ -23,7 +23,7 @@ export function StartScreen({ onStart }: StartScreenProps) {
           src={ASSETS.startYard}
           alt="Пиксельный двор"
         />
-        <h1>ПИХТО-ТАНЧИКИ</h1>
+        <h1>Пихта-Танчики</h1>
         {showTankFallback ? (
           <PixelTank />
         ) : (

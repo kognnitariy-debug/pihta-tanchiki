@@ -4,23 +4,24 @@ const FRAME_DURATION = 5200;
 const TYPE_SPEED = 45;
 
 const creditsFrames = [
-  { image: '/assets/pixelart/000.png', caption: '1997 год. Городу детства посвящается...' },
-  { image: '/assets/pixelart/001.jpeg', caption: 'Двор мкр «Самоцветы».' },
-  { image: '/assets/pixelart/002.png', caption: 'Вид с лоджии на море в дымке и завод.' },
-  { image: '/assets/pixelart/003.png', caption: 'Величественный индустриальный завод.' },
-  { image: '/assets/pixelart/004.jpeg', caption: 'Дворовая команда: Серега, Костя, Стас, Жека и Славик.' },
-  { image: '/assets/pixelart/005.png', caption: 'Черепашки на Денди.' },
+  { image: '/assets/pixelart/000.png', caption: 'Городу детства посвящается…' },
+  { image: '/assets/pixelart/001.jpeg', caption: 'Наш двор мкрн «Самоцветы».' },
+  { image: '/assets/pixelart/002.png', caption: 'Вид из лоджии на море и завод.' },
+  { image: '/assets/pixelart/003.png', caption: 'Величественный и индустриальный.' },
+  { image: '/assets/pixelart/004.JPG', caption: 'Дворовая команда: Серега, Костя, Стас, Жека и Славик.' },
+  { image: '/assets/pixelart/005.png', caption: 'Черепашки на денди.' },
   { image: '/assets/pixelart/006.png', caption: 'Вид на комбинат и ДК Металлургов.' },
-  { image: '/assets/pixelart/007.jpeg', caption: '- Continue? - Yes!..' },
+  { image: '/assets/pixelart/007.jpeg', caption: '- Contitnue?\n- Yes!..' },
 ];
 
 type CreditsScreenProps = {
   isMuted: boolean;
-  onBack: () => void;
+  onPlay: () => void;
 };
 
-export function CreditsScreen({ isMuted, onBack }: CreditsScreenProps) {
+export function CreditsScreen({ isMuted, onPlay }: CreditsScreenProps) {
   const [frameIndex, setFrameIndex] = useState(0);
+  const [isFinished, setIsFinished] = useState(false);
   const [typedLength, setTypedLength] = useState(0);
   const frame = creditsFrames[frameIndex];
   const typedCaption = useMemo(() => {
@@ -28,12 +29,23 @@ export function CreditsScreen({ isMuted, onBack }: CreditsScreenProps) {
   }, [frame.caption, typedLength]);
 
   useEffect(() => {
-    const frameTimer = window.setInterval(() => {
-      setFrameIndex((index) => (index + 1) % creditsFrames.length);
+    if (isFinished) {
+      return;
+    }
+
+    const frameTimer = window.setTimeout(() => {
+      setFrameIndex((index) => {
+        if (index >= creditsFrames.length - 1) {
+          setIsFinished(true);
+          return index;
+        }
+
+        return index + 1;
+      });
     }, FRAME_DURATION);
 
-    return () => window.clearInterval(frameTimer);
-  }, []);
+    return () => window.clearTimeout(frameTimer);
+  }, [frameIndex, isFinished]);
 
   useEffect(() => {
     setTypedLength(0);
@@ -58,27 +70,31 @@ export function CreditsScreen({ isMuted, onBack }: CreditsScreenProps) {
 
   return (
     <section className="screen credits-screen">
-      <audio autoPlay loop muted={isMuted}>
+      <audio autoPlay muted={isMuted}>
         <source src="/assets/pixelart/Soviet Courtyard Continue-2.mp3" type="audio/mpeg" />
         <source src="/assets/pixelart/Soviet Courtyard Continue.mp3" type="audio/mpeg" />
       </audio>
 
-      <button className="credits-back-button" type="button" onClick={onBack}>
-        Назад
-      </button>
-
       <div className="credits-stage">
         <img
-          className="credits-frame"
+          className={`credits-frame ${isFinished ? 'credits-frame-finished' : ''}`}
           src={frame.image}
           alt={`Кадр титров ${frameIndex + 1}`}
         />
       </div>
 
-      <p className="credits-caption">
+      <p className={`credits-caption ${frameIndex === 5 ? 'credits-caption-lower' : ''}`}>
         {typedCaption}
         <span className="credits-caret" aria-hidden="true">_</span>
       </p>
+
+      {isFinished && (
+        <div className="credits-end">
+          <button className="primary-button" type="button" onClick={onPlay}>
+            Метать!
+          </button>
+        </div>
+      )}
     </section>
   );
 }

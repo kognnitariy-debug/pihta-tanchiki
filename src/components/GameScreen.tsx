@@ -13,10 +13,28 @@ import {
   type PlayerId,
 } from '../gameLogic';
 
-export function GameScreen() {
+const RESULT_SOUND_DELAY = 520;
+const FIELD_RESULT_DELAY = 520;
+const RESULT_CARD_DELAY = 900;
+const RESULT_CARD_DURATION = 1500;
+const VICTORY_DELAY = 2600;
+const VICTORY_DURATION = 4000;
+
+type GameScreenProps = {
+  onCredits: () => void;
+};
+
+export function GameScreen({ onCredits }: GameScreenProps) {
   const [game, setGame] = useState(createInitialGameState);
   const [resultCard, setResultCard] = useState<{ figure: Figure; id: number } | null>(null);
+  const [victoryPlayer, setVictoryPlayer] = useState<PlayerId | null>(null);
+  const [isResultPending, setIsResultPending] = useState(false);
   const resultCardTimer = useRef<number | null>(null);
+  const resultDelayTimer = useRef<number | null>(null);
+  const fieldResultTimer = useRef<number | null>(null);
+  const resultSoundTimer = useRef<number | null>(null);
+  const victoryTimer = useRef<number | null>(null);
+  const creditsTimer = useRef<number | null>(null);
   const fieldFigureImage = game.lastDroppedFigure
     ? FIELD_FIGURE_IMAGES[game.lastDroppedFigure]
     : undefined;
@@ -31,24 +49,80 @@ export function GameScreen() {
     playRandomSound(AUDIO_ASSETS.throwSounds);
 
     const nextGame = throwKnife(game);
-    setGame(nextGame);
+    setResultCard(null);
+    setIsResultPending(true);
 
     if (resultCardTimer.current !== null) {
       window.clearTimeout(resultCardTimer.current);
       resultCardTimer.current = null;
     }
-
-    if (nextGame.lastDroppedFigure) {
-      setResultCard({ figure: nextGame.lastDroppedFigure, id: Date.now() });
-      resultCardTimer.current = window.setTimeout(() => {
-        setResultCard(null);
-        resultCardTimer.current = null;
-      }, 1500);
-      playSound(AUDIO_ASSETS.figureVoices[nextGame.lastDroppedFigure]);
-    } else if (nextGame.lastThrowFailed) {
-      setResultCard(null);
-      playSound(AUDIO_ASSETS.failedThrow);
+    if (resultDelayTimer.current !== null) {
+      window.clearTimeout(resultDelayTimer.current);
+      resultDelayTimer.current = null;
     }
+    if (fieldResultTimer.current !== null) {
+      window.clearTimeout(fieldResultTimer.current);
+      fieldResultTimer.current = null;
+    }
+    if (resultSoundTimer.current !== null) {
+      window.clearTimeout(resultSoundTimer.current);
+      resultSoundTimer.current = null;
+    }
+    if (victoryTimer.current !== null) {
+      window.clearTimeout(victoryTimer.current);
+      victoryTimer.current = null;
+    }
+    if (creditsTimer.current !== null) {
+      window.clearTimeout(creditsTimer.current);
+      creditsTimer.current = null;
+    }
+
+    fieldResultTimer.current = window.setTimeout(() => {
+      setGame(nextGame);
+      fieldResultTimer.current = null;
+
+      if (nextGame.lastDroppedFigure) {
+        const droppedFigure = nextGame.lastDroppedFigure;
+
+        resultDelayTimer.current = window.setTimeout(() => {
+          playSound(AUDIO_ASSETS.figureVoices[droppedFigure]);
+          setResultCard({ figure: droppedFigure, id: Date.now() });
+          resultDelayTimer.current = null;
+
+          resultCardTimer.current = window.setTimeout(() => {
+            setResultCard(null);
+            if (nextGame.winner === null) {
+              setIsResultPending(false);
+            }
+            resultCardTimer.current = null;
+          }, RESULT_CARD_DURATION);
+        }, RESULT_CARD_DELAY);
+
+        if (nextGame.winner !== null) {
+          const winner = nextGame.winner;
+
+          victoryTimer.current = window.setTimeout(() => {
+            setResultCard(null);
+            setVictoryPlayer(winner);
+            victoryTimer.current = null;
+
+            creditsTimer.current = window.setTimeout(() => {
+              setIsResultPending(false);
+              onCredits();
+              creditsTimer.current = null;
+            }, VICTORY_DURATION);
+          }, VICTORY_DELAY);
+        }
+      } else if (nextGame.lastThrowFailed) {
+        resultSoundTimer.current = window.setTimeout(() => {
+          playSound(AUDIO_ASSETS.failedThrow);
+          setIsResultPending(false);
+          resultSoundTimer.current = null;
+        }, RESULT_SOUND_DELAY);
+      } else {
+        setIsResultPending(false);
+      }
+    }, FIELD_RESULT_DELAY);
   }
 
   return (
@@ -67,15 +141,9 @@ export function GameScreen() {
         />
 
         <div className="throw-zone throw-zone-top">
-          <button className="primary-button" onClick={handleThrowKnife} disabled={game.winner !== null || resultCard !== null}>
+          <button className="primary-button" onClick={handleThrowKnife} disabled={game.winner !== null || isResultPending}>
             Метнуть нож
           </button>
-          {resultCard && (
-            <ResultCard
-              figure={resultCard.figure}
-              key={`${resultCard.figure}-${resultCard.id}`}
-            />
-          )}
         </div>
 
         <div className="sand-field" aria-label="Игровое поле">
@@ -90,7 +158,7 @@ export function GameScreen() {
           {game.lastDroppedFigure && (
             fieldFigureImage ? (
               <img
-                className="field-figure"
+                className={`field-figure ${isSmallFieldFigure(game.lastDroppedFigure) ? 'field-figure-small' : ''}`}
                 src={fieldFigureImage}
                 style={fieldFigureStyle}
                 alt={`Фигура на песке: ${game.lastDroppedFigure}`}
@@ -101,6 +169,12 @@ export function GameScreen() {
               </span>
             )
           )}
+          {resultCard && (
+            <ResultCard
+              figure={resultCard.figure}
+              key={`${resultCard.figure}-${resultCard.id}`}
+            />
+          )}
         </div>
       </div>
 
@@ -109,8 +183,13 @@ export function GameScreen() {
         isActive={game.currentPlayer === 1}
         playerId={1}
       />
+      {victoryPlayer !== null && <VictoryOverlay playerId={victoryPlayer} />}
     </section>
   );
+}
+
+function isSmallFieldFigure(figure: Figure | null): boolean {
+  return figure === 'Подвода' || figure === 'Вертолёт';
 }
 
 type ResultCardProps = {
@@ -122,6 +201,28 @@ function ResultCard({ figure }: ResultCardProps) {
     <div className="result-card" aria-live="polite">
       <img className="result-card-rune" src={RESULT_RUNE_IMAGES[figure]} alt="" />
       <p>{figure}</p>
+    </div>
+  );
+}
+
+type VictoryOverlayProps = {
+  playerId: PlayerId;
+};
+
+function VictoryOverlay({ playerId }: VictoryOverlayProps) {
+  const avatarSrc = playerId === 0 ? ASSETS.playerOne : ASSETS.playerTwo;
+
+  return (
+    <div className="victory-overlay" role="status" aria-live="assertive">
+      <div className="victory-card">
+        <img
+          className="victory-avatar"
+          src={avatarSrc}
+          alt={`Победитель: Игрок ${playerId + 1}`}
+        />
+        <p className="victory-title">Поздравляем!</p>
+        <p className="victory-text">Игрок {playerId + 1} собрал Бомбу и победил!</p>
+      </div>
     </div>
   );
 }
@@ -170,7 +271,7 @@ function PlayerPanel({ counts, isActive, playerId }: PlayerPanelProps) {
           alt={`Аватар игрока ${playerId + 1}`}
         />
         <h2>Игрок {playerId + 1}</h2>
-        <p className="player-score">{score} / {MAX_SCORE}</p>
+        <p className="player-score"><span>Очки</span>{score} / {MAX_SCORE}</p>
       </div>
 
       <div className="player-sand-board" aria-label={`Фигуры игрока ${playerId + 1}`}>
