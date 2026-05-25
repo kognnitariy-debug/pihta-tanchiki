@@ -11,7 +11,7 @@ const creditsFrames = [
   { image: '/assets/pixelart/004.JPG', caption: 'Дворовая команда: Серега, Костя, Стас, Жека и Славик.' },
   { image: '/assets/pixelart/005.png', caption: 'Черепашки на денди.' },
   { image: '/assets/pixelart/006.png', caption: 'Вид на комбинат и ДК Металлургов.' },
-  { image: '/assets/pixelart/007.jpeg', caption: '- Contitnue?\n- Yes!..' },
+  { image: '/assets/pixelart/007.jpeg', caption: '- Continue?\n- Yes!..' },
 ];
 
 type CreditsScreenProps = {
@@ -72,7 +72,6 @@ export function CreditsScreen({ isMuted, onPlay }: CreditsScreenProps) {
     <section className="screen credits-screen">
       <audio autoPlay muted={isMuted}>
         <source src="/assets/pixelart/Soviet Courtyard Continue-2.mp3" type="audio/mpeg" />
-        <source src="/assets/pixelart/Soviet Courtyard Continue.mp3" type="audio/mpeg" />
       </audio>
 
       <div className="credits-stage">
@@ -80,6 +79,7 @@ export function CreditsScreen({ isMuted, onPlay }: CreditsScreenProps) {
           className={`credits-frame ${isFinished ? 'credits-frame-finished' : ''}`}
           src={frame.image}
           alt={`Кадр титров ${frameIndex + 1}`}
+          decoding="async"
         />
       </div>
 

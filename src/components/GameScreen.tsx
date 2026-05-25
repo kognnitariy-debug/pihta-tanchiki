@@ -153,6 +153,7 @@ export function GameScreen({ onCredits }: GameScreenProps) {
               className="fallen-knife"
               src={ASSETS.fallenKnife}
               alt="Нож упал на песок"
+              decoding="async"
             />
           )}
           {game.lastDroppedFigure && (
@@ -162,6 +163,7 @@ export function GameScreen({ onCredits }: GameScreenProps) {
                 src={fieldFigureImage}
                 style={fieldFigureStyle}
                 alt={`Фигура на песке: ${game.lastDroppedFigure}`}
+                decoding="async"
               />
             ) : (
               <span className="field-figure-fallback" style={fieldFigureStyle}>
@@ -199,7 +201,7 @@ type ResultCardProps = {
 function ResultCard({ figure }: ResultCardProps) {
   return (
     <div className="result-card" aria-live="polite">
-      <img className="result-card-rune" src={RESULT_RUNE_IMAGES[figure]} alt="" />
+      <img className="result-card-rune" src={RESULT_RUNE_IMAGES[figure]} alt="" decoding="async" />
       <p>{figure}</p>
     </div>
   );
@@ -219,6 +221,7 @@ function VictoryOverlay({ playerId }: VictoryOverlayProps) {
           className="victory-avatar"
           src={avatarSrc}
           alt={`Победитель: Игрок ${playerId + 1}`}
+          decoding="async"
         />
         <p className="victory-title">Поздравляем!</p>
         <p className="victory-text">Игрок {playerId + 1} собрал Бомбу и победил!</p>
@@ -269,6 +272,7 @@ function PlayerPanel({ counts, isActive, playerId }: PlayerPanelProps) {
           className="player-avatar"
           src={avatarSrc}
           alt={`Аватар игрока ${playerId + 1}`}
+          decoding="async"
         />
         <h2>Игрок {playerId + 1}</h2>
         <p className="player-score"><span>Очки</span>{score} / {MAX_SCORE}</p>
@@ -284,6 +288,8 @@ function PlayerPanel({ counts, isActive, playerId }: PlayerPanelProps) {
         className={`player-decoration player-decoration-${decorationSide}`}
         src={FIELD_FIGURE_IMAGES['Самолёт']}
         alt=""
+        loading="lazy"
+        decoding="async"
       />
     </aside>
   );
@@ -321,6 +327,8 @@ function FigureMark({ figure }: FigureMarkProps) {
       className="figure-mark"
       src={FIGURE_IMAGES[figure]}
       alt=""
+      loading="lazy"
+      decoding="async"
       onError={() => setImageFailed(true)}
     />
   );

@@ -22,6 +22,7 @@ export function StartScreen({ onStart }: StartScreenProps) {
           className="start-yard-image"
           src={ASSETS.startYard}
           alt="Пиксельный двор"
+          decoding="async"
         />
         <h1>Пихта-Танчики</h1>
         {showTankFallback ? (
@@ -31,6 +32,7 @@ export function StartScreen({ onStart }: StartScreenProps) {
             className="start-tank-image"
             src={ASSETS.tank}
             alt="Пиксельный танчик"
+            decoding="async"
             onError={() => setShowTankFallback(true)}
           />
         )}
