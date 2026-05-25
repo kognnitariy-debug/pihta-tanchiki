@@ -37,15 +37,15 @@ export const FIGURE_IMAGES: Record<Figure, string> = {
   Бомба: '/assets/runes/processed/b.png',
 };
 
-// Всплывающая карточка использует те же лёгкие обработанные руны.
-// Тяжёлые исходники лежат в source-assets/runes и не попадают в деплой.
+// Всплывающая карточка использует детализированные песочные руны.
+// Маленькие руны в дашбордах остаются лёгкими processed-версиями.
 export const RESULT_RUNE_IMAGES: Record<Figure, string> = {
-  Пихта: '/assets/runes/processed/pichta.png',
-  Танчик: '/assets/runes/processed/tanchik.png',
-  Самолёт: '/assets/runes/processed/samolet.png',
-  Подвода: '/assets/runes/processed/podvoda.png',
-  Вертолёт: '/assets/runes/processed/vertolet.png',
-  Корпус: '/assets/runes/processed/corpus.png',
-  Армия: '/assets/runes/processed/army.png',
-  Бомба: '/assets/runes/processed/b.png',
+  Пихта: '/assets/runes/result/pichta.png',
+  Танчик: '/assets/runes/result/tanchik.png',
+  Самолёт: '/assets/runes/result/samolet.png',
+  Подвода: '/assets/runes/result/podvoda.png',
+  Вертолёт: '/assets/runes/result/vertolet.png',
+  Корпус: '/assets/runes/result/corpus.png',
+  Армия: '/assets/runes/result/army.png',
+  Бомба: '/assets/runes/result/b.png',
 };
