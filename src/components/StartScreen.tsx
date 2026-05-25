@@ -5,9 +5,10 @@ import { PixelTank } from './PixelTank';
 
 type StartScreenProps = {
   onStart: () => void;
+  onOnline: () => void;
 };
 
-export function StartScreen({ onStart }: StartScreenProps) {
+export function StartScreen({ onOnline, onStart }: StartScreenProps) {
   const [showTankFallback, setShowTankFallback] = useState(false);
 
   function handleStart() {
@@ -38,9 +39,14 @@ export function StartScreen({ onStart }: StartScreenProps) {
         )}
       </div>
 
-      <button className="primary-button" onClick={handleStart}>
-        Начать метать
-      </button>
+      <div className="start-actions">
+        <button className="primary-button" onClick={handleStart}>
+          Начать метать
+        </button>
+        <button className="secondary-button start-online-button" type="button" onClick={onOnline}>
+          Сетевая игра
+        </button>
+      </div>
     </section>
   );
 }

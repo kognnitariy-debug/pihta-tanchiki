@@ -1,4 +1,4 @@
-import { useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { ASSETS, FIELD_FIGURE_IMAGES, FIGURE_IMAGES, RESULT_RUNE_IMAGES } from '../assets';
 import { AUDIO_ASSETS, playRandomSound, playSound } from '../audio';
 import {
@@ -10,6 +10,7 @@ import {
   throwKnife,
   type Figure,
   type FigureCounts,
+  type GameState,
   type PlayerId,
 } from '../gameLogic';
 
@@ -22,10 +23,24 @@ const VICTORY_DURATION = 4000;
 
 type GameScreenProps = {
   onCredits: () => void;
+  gameState?: GameState;
+  canPlay?: boolean;
+  localPlayerId?: PlayerId;
+  onlineMessage?: string;
+  roomId?: string;
+  onGameStateChange?: (state: GameState) => void;
 };
 
-export function GameScreen({ onCredits }: GameScreenProps) {
-  const [game, setGame] = useState(createInitialGameState);
+export function GameScreen({
+  gameState,
+  canPlay = true,
+  localPlayerId,
+  onlineMessage,
+  onCredits,
+  onGameStateChange,
+  roomId,
+}: GameScreenProps) {
+  const [localGame, setLocalGame] = useState(createInitialGameState);
   const [resultCard, setResultCard] = useState<{ figure: Figure; id: number } | null>(null);
   const [victoryPlayer, setVictoryPlayer] = useState<PlayerId | null>(null);
   const [isResultPending, setIsResultPending] = useState(false);
@@ -35,6 +50,9 @@ export function GameScreen({ onCredits }: GameScreenProps) {
   const resultSoundTimer = useRef<number | null>(null);
   const victoryTimer = useRef<number | null>(null);
   const creditsTimer = useRef<number | null>(null);
+  const game = gameState ?? localGame;
+  const isOnlineGame = Boolean(onGameStateChange);
+  const canThrowOnline = canPlay && (!isOnlineGame || localPlayerId === game.currentPlayer);
   const fieldFigureImage = game.lastDroppedFigure
     ? FIELD_FIGURE_IMAGES[game.lastDroppedFigure]
     : undefined;
@@ -45,7 +63,19 @@ export function GameScreen({ onCredits }: GameScreenProps) {
         } as CSSProperties)
     : undefined;
 
+  useEffect(() => {
+    if (!gameState) {
+      return;
+    }
+
+    setLocalGame(gameState);
+  }, [gameState]);
+
   function handleThrowKnife() {
+    if (!canThrowOnline) {
+      return;
+    }
+
     playRandomSound(AUDIO_ASSETS.throwSounds);
 
     const nextGame = throwKnife(game);
@@ -78,7 +108,8 @@ export function GameScreen({ onCredits }: GameScreenProps) {
     }
 
     fieldResultTimer.current = window.setTimeout(() => {
-      setGame(nextGame);
+      setLocalGame(nextGame);
+      onGameStateChange?.(nextGame);
       fieldResultTimer.current = null;
 
       if (nextGame.lastDroppedFigure) {
@@ -137,12 +168,14 @@ export function GameScreen({ onCredits }: GameScreenProps) {
         <MessageBox
           mergeMessages={game.mergeMessages}
           message={game.message}
+          onlineMessage={onlineMessage}
+          roomId={roomId}
           winner={game.winner}
         />
 
         <div className="throw-zone throw-zone-top">
-          <button className="primary-button" onClick={handleThrowKnife} disabled={game.winner !== null || isResultPending}>
-            Метнуть нож
+          <button className="primary-button" onClick={handleThrowKnife} disabled={game.winner !== null || isResultPending || !canThrowOnline}>
+            {!canPlay ? 'Ждём игрока' : canThrowOnline ? 'Метнуть нож' : 'Ждём ход'}
           </button>
         </div>
 
@@ -233,15 +266,22 @@ function VictoryOverlay({ playerId }: VictoryOverlayProps) {
 type MessageBoxProps = {
   mergeMessages: string[];
   message: string;
+  onlineMessage?: string;
+  roomId?: string;
   winner: PlayerId | null;
 };
 
-function MessageBox({ mergeMessages, message, winner }: MessageBoxProps) {
+function MessageBox({ mergeMessages, message, onlineMessage, roomId, winner }: MessageBoxProps) {
+  const inviteUrl = roomId ? `${window.location.origin}/room/${roomId}` : '';
+
   return (
     <div className="message-box">
+      {roomId && <p className="room-code">Комната {roomId}</p>}
       <p className="throw-message">
         {message.startsWith('Нож упал') ? 'Нож упал!' : message}
       </p>
+      {onlineMessage && <p className="online-status-message">{onlineMessage}</p>}
+      {inviteUrl && <p className="invite-link">{inviteUrl}</p>}
       {mergeMessages.map((mergeMessage, index) => (
         <p className="merge-message" key={`${mergeMessage}-${index}`}>
           {mergeMessage}

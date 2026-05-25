@@ -4,18 +4,27 @@ import { CreditsScreen } from './components/CreditsScreen';
 import { DebugScreen } from './components/DebugScreen';
 import { GameScreen } from './components/GameScreen';
 import { StartScreen } from './components/StartScreen';
+import { OnlineGameScreen } from './components/OnlineGameScreen';
+import { OnlineLobby } from './components/OnlineLobby';
+import type { OnlinePlayer } from './online';
 import { preloadGameAssets, type PreloadProgress } from './preload';
 
-type Screen = 'start' | 'game' | 'credits';
+type Screen = 'start' | 'game' | 'online-lobby' | 'online-game' | 'credits';
 
 export function App() {
+  const roomCodeFromUrl = getRoomCodeFromUrl();
   const [screen, setScreen] = useState<Screen>(() => {
-    return window.location.pathname === '/debug' ? 'game' : 'start';
+    if (window.location.pathname === '/debug') {
+      return 'game';
+    }
+
+    return roomCodeFromUrl ? 'online-lobby' : 'start';
   });
   const [isMuted, setIsMuted] = useState(false);
   const [showRules, setShowRules] = useState(false);
   const [isPreloaded, setIsPreloaded] = useState(false);
   const [preloadProgress, setPreloadProgress] = useState<PreloadProgress>({ loaded: 0, total: 1 });
+  const [onlinePlayer, setOnlinePlayer] = useState<OnlinePlayer | null>(null);
   const isDebugRoute = window.location.pathname === '/debug';
   const audioSources = useMemo(() => {
     return [
@@ -75,7 +84,7 @@ export function App() {
     <main className="app">
       <div className="app-brand">
         <span>ПИХТА-ТАНЧИКИ ONLINE</span>
-        <span>BUILD 1.0</span>
+        <span>BUILD 2.0</span>
       </div>
       <button
         className={`audio-toggle ${isMuted ? 'audio-toggle-muted' : ''}`}
@@ -107,9 +116,23 @@ export function App() {
       {!isPreloaded ? (
         <LoadingScreen progress={preloadProgress} />
       ) : screen === 'start' ? (
-        <StartScreen onStart={() => setScreen('game')} />
+        <StartScreen onOnline={() => setScreen('online-lobby')} onStart={() => setScreen('game')} />
       ) : screen === 'game' ? (
         <GameScreen onCredits={() => setScreen('credits')} />
+      ) : screen === 'online-lobby' ? (
+        <OnlineLobby
+          initialRoomCode={roomCodeFromUrl}
+          onBack={() => {
+            window.history.pushState(null, '', '/');
+            setScreen('start');
+          }}
+          onReady={(player) => {
+            setOnlinePlayer(player);
+            setScreen('online-game');
+          }}
+        />
+      ) : screen === 'online-game' && onlinePlayer ? (
+        <OnlineGameScreen initialPlayer={onlinePlayer} onCredits={() => setScreen('credits')} />
       ) : (
         <CreditsScreen isMuted={isMuted} onPlay={() => setScreen('game')} />
       )}
@@ -117,6 +140,11 @@ export function App() {
       <footer className="app-footer">Стас Сладковский 2026 (C)</footer>
     </main>
   );
+}
+
+function getRoomCodeFromUrl() {
+  const match = window.location.pathname.match(/^\/room\/([^/]+)$/);
+  return match?.[1]?.toUpperCase() ?? '';
 }
 
 type LoadingScreenProps = {
