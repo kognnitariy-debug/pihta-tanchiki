@@ -1,18 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
+import { CREDITS_AUDIO, CREDITS_FRAMES } from '../creditsData';
 
 const FRAME_DURATION = 5200;
 const TYPE_SPEED = 45;
-
-const creditsFrames = [
-  { image: '/assets/pixelart/000.png', caption: 'Городу детства посвящается…' },
-  { image: '/assets/pixelart/001.jpeg', caption: 'Наш двор мкрн «Самоцветы».' },
-  { image: '/assets/pixelart/002.png', caption: 'Вид из лоджии на море и завод.' },
-  { image: '/assets/pixelart/003.png', caption: 'Величественный и индустриальный.' },
-  { image: '/assets/pixelart/004.JPG', caption: 'Дворовая команда: Серега, Костя, Стас, Жека и Славик.' },
-  { image: '/assets/pixelart/005.png', caption: 'Черепашки на денди.' },
-  { image: '/assets/pixelart/006.png', caption: 'Вид на комбинат и ДК Металлургов.' },
-  { image: '/assets/pixelart/007.jpeg', caption: '- Continue?\n- Yes!..' },
-];
 
 type CreditsScreenProps = {
   isMuted: boolean;
@@ -23,7 +13,7 @@ export function CreditsScreen({ isMuted, onPlay }: CreditsScreenProps) {
   const [frameIndex, setFrameIndex] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
   const [typedLength, setTypedLength] = useState(0);
-  const frame = creditsFrames[frameIndex];
+  const frame = CREDITS_FRAMES[frameIndex];
   const typedCaption = useMemo(() => {
     return frame.caption.slice(0, typedLength);
   }, [frame.caption, typedLength]);
@@ -35,7 +25,7 @@ export function CreditsScreen({ isMuted, onPlay }: CreditsScreenProps) {
 
     const frameTimer = window.setTimeout(() => {
       setFrameIndex((index) => {
-        if (index >= creditsFrames.length - 1) {
+        if (index >= CREDITS_FRAMES.length - 1) {
           setIsFinished(true);
           return index;
         }
@@ -71,7 +61,7 @@ export function CreditsScreen({ isMuted, onPlay }: CreditsScreenProps) {
   return (
     <section className="screen credits-screen">
       <audio autoPlay muted={isMuted}>
-        <source src="/assets/pixelart/Soviet Courtyard Continue-2.mp3" type="audio/mpeg" />
+        <source src={CREDITS_AUDIO} type="audio/mpeg" />
       </audio>
 
       <div className="credits-stage">

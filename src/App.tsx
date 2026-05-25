@@ -4,6 +4,7 @@ import { CreditsScreen } from './components/CreditsScreen';
 import { DebugScreen } from './components/DebugScreen';
 import { GameScreen } from './components/GameScreen';
 import { StartScreen } from './components/StartScreen';
+import { preloadGameAssets, type PreloadProgress } from './preload';
 
 type Screen = 'start' | 'game' | 'credits';
 
@@ -13,6 +14,8 @@ export function App() {
   });
   const [isMuted, setIsMuted] = useState(false);
   const [showRules, setShowRules] = useState(false);
+  const [isPreloaded, setIsPreloaded] = useState(false);
+  const [preloadProgress, setPreloadProgress] = useState<PreloadProgress>({ loaded: 0, total: 1 });
   const isDebugRoute = window.location.pathname === '/debug';
   const audioSources = useMemo(() => {
     return [
@@ -34,6 +37,29 @@ export function App() {
       window.removeEventListener('keydown', warmAudio);
     };
   }, [audioSources]);
+
+  useEffect(() => {
+    if (isDebugRoute) {
+      setIsPreloaded(true);
+      return;
+    }
+
+    let isMounted = true;
+
+    preloadGameAssets((progress) => {
+      if (isMounted) {
+        setPreloadProgress(progress);
+      }
+    }).finally(() => {
+      if (isMounted) {
+        setIsPreloaded(true);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isDebugRoute]);
 
   if (isDebugRoute) {
     return <DebugScreen isMuted={isMuted} onToggleAudio={toggleAudio} />;
@@ -60,7 +86,7 @@ export function App() {
       >
         {isMuted ? 'ЗВУК ВЫКЛ' : 'ЗВУК ВКЛ'}
       </button>
-      {screen !== 'credits' && (
+      {isPreloaded && screen !== 'credits' && (
         <div className="top-actions">
           <button
             className="top-action-button"
@@ -78,7 +104,9 @@ export function App() {
           </button>
         </div>
       )}
-      {screen === 'start' ? (
+      {!isPreloaded ? (
+        <LoadingScreen progress={preloadProgress} />
+      ) : screen === 'start' ? (
         <StartScreen onStart={() => setScreen('game')} />
       ) : screen === 'game' ? (
         <GameScreen onCredits={() => setScreen('credits')} />
@@ -88,6 +116,26 @@ export function App() {
       {showRules && <RulesModal onClose={() => setShowRules(false)} />}
       <footer className="app-footer">Стас Сладковский 2026 (C)</footer>
     </main>
+  );
+}
+
+type LoadingScreenProps = {
+  progress: PreloadProgress;
+};
+
+function LoadingScreen({ progress }: LoadingScreenProps) {
+  const percent = Math.round((progress.loaded / Math.max(progress.total, 1)) * 100);
+
+  return (
+    <section className="screen loading-screen" aria-live="polite">
+      <div className="loading-panel">
+        <p className="loading-title">Пихта-Танчики</p>
+        <div className="loading-bar" aria-label={`Загрузка ${percent}%`}>
+          <span style={{ width: `${percent}%` }} />
+        </div>
+        <p className="loading-text">Загрузка двора... {percent}%</p>
+      </div>
+    </section>
   );
 }
 
