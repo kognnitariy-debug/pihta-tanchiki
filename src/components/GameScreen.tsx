@@ -99,6 +99,35 @@ export function GameScreen({
     }
   }, [game.lastDroppedFigure, game.lastThrowFailed, remoteEventId]);
 
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      const target = event.target;
+      const isTyping =
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement ||
+        target instanceof HTMLSelectElement ||
+        (target instanceof HTMLElement && target.isContentEditable);
+
+      if (isTyping || event.code !== 'Space' || event.repeat) {
+        return;
+      }
+
+      event.preventDefault();
+
+      if (game.winner !== null || isResultPending || !canThrowOnline) {
+        return;
+      }
+
+      handleThrowKnife();
+    }
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [canThrowOnline, game, isResultPending]);
+
   function handleThrowKnife() {
     if (!canThrowOnline) {
       return;
