@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://pihta-tanchiki.ru/sitemap.xml
