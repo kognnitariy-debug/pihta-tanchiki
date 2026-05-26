@@ -27,6 +27,7 @@ type GameScreenProps = {
   canPlay?: boolean;
   localPlayerId?: PlayerId;
   onlineMessage?: string;
+  remoteEventId?: string;
   roomId?: string;
   onGameStateChange?: (state: GameState) => void;
 };
@@ -38,6 +39,7 @@ export function GameScreen({
   onlineMessage,
   onCredits,
   onGameStateChange,
+  remoteEventId,
   roomId,
 }: GameScreenProps) {
   const [localGame, setLocalGame] = useState(createInitialGameState);
@@ -50,6 +52,7 @@ export function GameScreen({
   const resultSoundTimer = useRef<number | null>(null);
   const victoryTimer = useRef<number | null>(null);
   const creditsTimer = useRef<number | null>(null);
+  const handledRemoteEvent = useRef<string | null>(null);
   const game = gameState ?? localGame;
   const isOnlineGame = Boolean(onGameStateChange);
   const canThrowOnline = canPlay && (!isOnlineGame || localPlayerId === game.currentPlayer);
@@ -70,6 +73,31 @@ export function GameScreen({
 
     setLocalGame(gameState);
   }, [gameState]);
+
+  useEffect(() => {
+    if (!remoteEventId || handledRemoteEvent.current === remoteEventId) {
+      return;
+    }
+
+    handledRemoteEvent.current = remoteEventId;
+
+    if (game.lastDroppedFigure) {
+      const droppedFigure = game.lastDroppedFigure;
+      playSound(AUDIO_ASSETS.figureVoices[droppedFigure]);
+      setResultCard({ figure: droppedFigure, id: Date.now() });
+
+      if (resultCardTimer.current !== null) {
+        window.clearTimeout(resultCardTimer.current);
+      }
+
+      resultCardTimer.current = window.setTimeout(() => {
+        setResultCard(null);
+        resultCardTimer.current = null;
+      }, RESULT_CARD_DURATION);
+    } else if (game.lastThrowFailed) {
+      playSound(AUDIO_ASSETS.failedThrow);
+    }
+  }, [game.lastDroppedFigure, game.lastThrowFailed, remoteEventId]);
 
   function handleThrowKnife() {
     if (!canThrowOnline) {
@@ -274,6 +302,22 @@ type MessageBoxProps = {
 function MessageBox({ mergeMessages, message, onlineMessage, roomId, winner }: MessageBoxProps) {
   const inviteUrl = roomId ? `${window.location.origin}/room/${roomId}` : '';
 
+  async function copyInviteUrl() {
+    if (!inviteUrl) {
+      return;
+    }
+
+    try {
+      if (!navigator.clipboard) {
+        throw new Error('Clipboard is not available');
+      }
+
+      await navigator.clipboard.writeText(inviteUrl);
+    } catch {
+      window.prompt('Ссылка на комнату', inviteUrl);
+    }
+  }
+
   return (
     <div className="message-box">
       {roomId && <p className="room-code">Комната {roomId}</p>}
@@ -281,7 +325,14 @@ function MessageBox({ mergeMessages, message, onlineMessage, roomId, winner }: M
         {message.startsWith('Нож упал') ? 'Нож упал!' : message}
       </p>
       {onlineMessage && <p className="online-status-message">{onlineMessage}</p>}
-      {inviteUrl && <p className="invite-link">{inviteUrl}</p>}
+      {inviteUrl && (
+        <div className="invite-row">
+          <p className="invite-link">{inviteUrl}</p>
+          <button className="invite-copy-button" type="button" onClick={copyInviteUrl}>
+            Копировать
+          </button>
+        </div>
+      )}
       {mergeMessages.map((mergeMessage, index) => (
         <p className="merge-message" key={`${mergeMessage}-${index}`}>
           {mergeMessage}

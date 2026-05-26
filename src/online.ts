@@ -49,23 +49,34 @@ export function createRoomCode() {
 
 export async function createOnlineRoom(): Promise<OnlinePlayer> {
   const token = getPlayerToken();
-  const roomId = createRoomCode();
-  const room: SupabaseRoomRow = {
-    id: roomId,
-    state: createInitialGameState(),
-    player1_token: token,
-    player2_token: null,
-  };
 
-  await request<SupabaseRoomRow[]>('/rooms', {
-    method: 'POST',
-    headers: {
-      Prefer: 'return=representation',
-    },
-    body: JSON.stringify(room),
-  });
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    const roomId = createRoomCode();
+    const room: SupabaseRoomRow = {
+      id: roomId,
+      state: createInitialGameState(),
+      player1_token: token,
+      player2_token: null,
+    };
 
-  return { roomId, playerId: 0, token };
+    try {
+      await request<SupabaseRoomRow[]>('/rooms', {
+        method: 'POST',
+        headers: {
+          Prefer: 'return=representation',
+        },
+        body: JSON.stringify(room),
+      });
+
+      return { roomId, playerId: 0, token };
+    } catch (error) {
+      if (attempt === 3) {
+        throw error;
+      }
+    }
+  }
+
+  throw new Error('Не удалось создать комнату');
 }
 
 export async function joinOnlineRoom(roomId: string): Promise<OnlinePlayer> {

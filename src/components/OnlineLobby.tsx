@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   createOnlineRoom,
   isOnlineConfigured,
@@ -17,6 +17,16 @@ export function OnlineLobby({ initialRoomCode = '', onBack, onReady }: OnlineLob
   const [message, setMessage] = useState('');
   const [isBusy, setIsBusy] = useState(false);
   const isConfigured = isOnlineConfigured();
+
+  useEffect(() => {
+    if (!initialRoomCode || !isConfigured) {
+      return;
+    }
+
+    handleJoinRoom();
+    // Автовход нужен только при первом открытии ссылки комнаты.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   async function handleCreateRoom() {
     setIsBusy(true);

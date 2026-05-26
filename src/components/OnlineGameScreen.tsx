@@ -21,7 +21,10 @@ export function OnlineGameScreen({ initialPlayer, onCredits }: OnlineGameScreenP
   const [room, setRoom] = useState<OnlineRoom | null>(null);
   const [game, setGame] = useState<GameState>(createInitialGameState);
   const [message, setMessage] = useState('Подключаемся к комнате...');
+  const [remoteEventId, setRemoteEventId] = useState('');
   const lastSavedState = useRef<string>('');
+  const lastRoomStamp = useRef('');
+  const ignoreNextStamp = useRef('');
 
   useEffect(() => {
     let isMounted = true;
@@ -38,6 +41,17 @@ export function OnlineGameScreen({ initialPlayer, onCredits }: OnlineGameScreenP
         setGame(nextRoom.state);
         lastSavedState.current = JSON.stringify(nextRoom.state);
         setMessage(getRoomMessage(nextRoom));
+
+        const nextStamp = nextRoom.updated_at ?? '';
+        if (nextStamp && nextStamp !== lastRoomStamp.current) {
+          lastRoomStamp.current = nextStamp;
+
+          if (ignoreNextStamp.current === nextStamp) {
+            ignoreNextStamp.current = '';
+          } else {
+            setRemoteEventId(nextStamp);
+          }
+        }
       } catch {
         if (isMounted) {
           setMessage('Связь с комнатой прервалась. Пробую снова...');
@@ -71,7 +85,10 @@ export function OnlineGameScreen({ initialPlayer, onCredits }: OnlineGameScreenP
 
       if (nextRoom) {
         setRoom(nextRoom);
+        setGame(nextRoom.state);
         setMessage(getRoomMessage(nextRoom));
+        ignoreNextStamp.current = nextRoom.updated_at ?? '';
+        lastRoomStamp.current = nextRoom.updated_at ?? lastRoomStamp.current;
       }
     } catch {
       setMessage('Не удалось отправить ход. Проверь интернет.');
@@ -86,6 +103,7 @@ export function OnlineGameScreen({ initialPlayer, onCredits }: OnlineGameScreenP
       onlineMessage={message}
       onCredits={onCredits}
       onGameStateChange={handleGameStateChange}
+      remoteEventId={remoteEventId}
       roomId={player.roomId}
     />
   );
