@@ -52,8 +52,12 @@ function preloadImage(src: string | undefined, markLoaded: () => void) {
     const image = new Image();
 
     image.onload = () => {
-      markLoaded();
-      resolve();
+      const decode = image.decode ? image.decode().catch(() => undefined) : Promise.resolve();
+
+      decode.then(() => {
+        markLoaded();
+        resolve();
+      });
     };
     image.onerror = () => {
       markLoaded();

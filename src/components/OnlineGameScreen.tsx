@@ -9,7 +9,7 @@ import {
 } from '../online';
 import { GameScreen } from './GameScreen';
 
-const POLL_INTERVAL = 1400;
+const POLL_INTERVAL = 800;
 
 type OnlineGameScreenProps = {
   initialPlayer: OnlinePlayer;
@@ -25,11 +25,19 @@ export function OnlineGameScreen({ initialPlayer, onCredits }: OnlineGameScreenP
   const lastSavedState = useRef<string>('');
   const lastRoomStamp = useRef('');
   const ignoreNextStamp = useRef('');
+  const isSyncing = useRef(false);
+  const isSaving = useRef(false);
 
   useEffect(() => {
     let isMounted = true;
 
     async function syncRoom() {
+      if (isSyncing.current || isSaving.current) {
+        return;
+      }
+
+      isSyncing.current = true;
+
       try {
         const nextRoom = await fetchOnlineRoom(player.roomId);
 
@@ -37,9 +45,11 @@ export function OnlineGameScreen({ initialPlayer, onCredits }: OnlineGameScreenP
           return;
         }
 
+        const nextSerializedState = JSON.stringify(nextRoom.state);
+
         setRoom(nextRoom);
         setGame(nextRoom.state);
-        lastSavedState.current = JSON.stringify(nextRoom.state);
+        lastSavedState.current = nextSerializedState;
         setMessage(getRoomMessage(nextRoom));
 
         const nextStamp = nextRoom.updated_at ?? '';
@@ -56,15 +66,21 @@ export function OnlineGameScreen({ initialPlayer, onCredits }: OnlineGameScreenP
         if (isMounted) {
           setMessage('Связь с комнатой прервалась. Пробую снова...');
         }
+      } finally {
+        isSyncing.current = false;
       }
     }
 
     syncRoom();
     const interval = window.setInterval(syncRoom, POLL_INTERVAL);
+    window.addEventListener('focus', syncRoom);
+    document.addEventListener('visibilitychange', syncRoom);
 
     return () => {
       isMounted = false;
       window.clearInterval(interval);
+      window.removeEventListener('focus', syncRoom);
+      document.removeEventListener('visibilitychange', syncRoom);
     };
   }, [player.roomId]);
 
@@ -78,10 +94,10 @@ export function OnlineGameScreen({ initialPlayer, onCredits }: OnlineGameScreenP
 
     lastSavedState.current = serializedState;
     setMessage('Отправляю ход второму игроку...');
+    isSaving.current = true;
 
     try {
-      await saveOnlineRoomState(player.roomId, nextGame);
-      const nextRoom = await fetchOnlineRoom(player.roomId);
+      const nextRoom = await saveOnlineRoomState(player.roomId, nextGame);
 
       if (nextRoom) {
         setRoom(nextRoom);
@@ -92,6 +108,8 @@ export function OnlineGameScreen({ initialPlayer, onCredits }: OnlineGameScreenP
       }
     } catch {
       setMessage('Не удалось отправить ход. Проверь интернет.');
+    } finally {
+      isSaving.current = false;
     }
   }
 

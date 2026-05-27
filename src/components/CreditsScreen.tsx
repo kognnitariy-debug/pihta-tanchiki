@@ -65,12 +65,17 @@ export function CreditsScreen({ isMuted, onPlay }: CreditsScreenProps) {
       </audio>
 
       <div className="credits-stage">
-        <img
-          className={`credits-frame ${isFinished ? 'credits-frame-finished' : ''}`}
-          src={frame.image}
-          alt={`Кадр титров ${frameIndex + 1}`}
-          decoding="async"
-        />
+        {CREDITS_FRAMES.map((creditsFrame, index) => (
+          <img
+            className={`credits-frame ${index === frameIndex ? 'credits-frame-active' : ''} ${isFinished && index === frameIndex ? 'credits-frame-finished' : ''}`}
+            src={creditsFrame.image}
+            alt={index === frameIndex ? `Кадр титров ${frameIndex + 1}` : ''}
+            aria-hidden={index !== frameIndex}
+            decoding="async"
+            loading="eager"
+            key={creditsFrame.image}
+          />
+        ))}
       </div>
 
       <p className={`credits-caption ${frameIndex === 5 ? 'credits-caption-lower' : ''}`}>

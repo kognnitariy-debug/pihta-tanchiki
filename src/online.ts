@@ -104,7 +104,10 @@ export async function joinOnlineRoom(roomId: string): Promise<OnlinePlayer> {
     headers: {
       Prefer: 'return=representation',
     },
-    body: JSON.stringify({ player2_token: token }),
+    body: JSON.stringify({
+      player2_token: token,
+      updated_at: new Date().toISOString(),
+    }),
   });
 
   return { roomId: room.id, playerId: 1, token };
@@ -118,8 +121,8 @@ export async function fetchOnlineRoom(roomId: string): Promise<OnlineRoom | null
   return rows[0] ?? null;
 }
 
-export async function saveOnlineRoomState(roomId: string, state: GameState) {
-  await request<SupabaseRoomRow[]>(`/rooms?id=eq.${encodeURIComponent(roomId)}`, {
+export async function saveOnlineRoomState(roomId: string, state: GameState): Promise<OnlineRoom | null> {
+  const rows = await request<SupabaseRoomRow[]>(`/rooms?id=eq.${encodeURIComponent(roomId)}`, {
     method: 'PATCH',
     headers: {
       Prefer: 'return=representation',
@@ -129,6 +132,8 @@ export async function saveOnlineRoomState(roomId: string, state: GameState) {
       updated_at: new Date().toISOString(),
     }),
   });
+
+  return rows[0] ?? null;
 }
 
 async function request<T>(path: string, init: RequestInit): Promise<T> {
@@ -138,10 +143,13 @@ async function request<T>(path: string, init: RequestInit): Promise<T> {
 
   const response = await fetch(`${SUPABASE_URL}/rest/v1${path}`, {
     ...init,
+    cache: 'no-store',
     headers: {
       apikey: SUPABASE_ANON_KEY,
       Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
       'Content-Type': 'application/json',
+      'Cache-Control': 'no-store',
+      Pragma: 'no-cache',
       ...init.headers,
     },
   });
