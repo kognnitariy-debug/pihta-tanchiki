@@ -6,6 +6,8 @@ import { GameScreen } from './components/GameScreen';
 import { StartScreen } from './components/StartScreen';
 import { OnlineGameScreen } from './components/OnlineGameScreen';
 import { OnlineLobby } from './components/OnlineLobby';
+import { RESULT_RUNE_IMAGES } from './assets';
+import { FIGURES } from './gameLogic';
 import type { OnlinePlayer } from './online';
 import { preloadGameAssets, type PreloadProgress } from './preload';
 
@@ -99,6 +101,7 @@ export function App() {
       >
         {isMuted ? 'ЗВУК ВЫКЛ' : 'ЗВУК ВКЛ'}
       </button>
+      <AssetCache />
       {isPreloaded && screen !== 'credits' && (
         <div className="top-actions">
           <button
@@ -143,6 +146,22 @@ export function App() {
       {showRules && <RulesModal onClose={() => setShowRules(false)} />}
       <footer className="app-footer">Стас Сладковский 2026 (C)</footer>
     </main>
+  );
+}
+
+function AssetCache() {
+  return (
+    <div className="asset-cache" aria-hidden="true">
+      {FIGURES.map((figure) => (
+        <img
+          src={RESULT_RUNE_IMAGES[figure]}
+          alt=""
+          decoding="async"
+          loading="eager"
+          key={figure}
+        />
+      ))}
+    </div>
   );
 }
 

@@ -85,6 +85,22 @@ button:disabled {
   background: #7f4520;
 }
 
+.asset-cache {
+  position: fixed;
+  left: -1000px;
+  top: -1000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.asset-cache img {
+  width: 1px;
+  height: 1px;
+}
+
 .top-actions {
   position: fixed;
   top: 18px;
@@ -750,6 +766,11 @@ h1 {
   max-height: 50%;
 }
 
+.field-figure-tank {
+  width: min(27vw, 180px);
+  max-height: 48%;
+}
+
 .fallen-knife {
   position: absolute;
   left: 50%;
@@ -1070,6 +1091,10 @@ h1 {
     width: min(38vw, 190px);
   }
 
+  .field-figure-tank {
+    width: min(32vw, 162px);
+  }
+
   .fallen-knife {
     width: min(58vw, 320px);
   }
@@ -1196,6 +1221,10 @@ h1 {
 
   .field-figure-small {
     width: min(42vw, 176px);
+  }
+
+  .field-figure-tank {
+    width: min(34vw, 150px);
   }
 
   .fallen-knife {

@@ -249,7 +249,7 @@ export function GameScreen({
           {game.lastDroppedFigure && (
             fieldFigureImage ? (
               <img
-                className={`field-figure ${isSmallFieldFigure(game.lastDroppedFigure) ? 'field-figure-small' : ''}`}
+                className={getFieldFigureClassName(game.lastDroppedFigure)}
                 src={fieldFigureImage}
                 style={fieldFigureStyle}
                 alt={`Фигура на песке: ${game.lastDroppedFigure}`}
@@ -284,6 +284,20 @@ function isSmallFieldFigure(figure: Figure | null): boolean {
   return figure === 'Подвода' || figure === 'Вертолёт';
 }
 
+function getFieldFigureClassName(figure: Figure | null): string {
+  const classNames = ['field-figure'];
+
+  if (isSmallFieldFigure(figure)) {
+    classNames.push('field-figure-small');
+  }
+
+  if (figure === 'Танчик') {
+    classNames.push('field-figure-tank');
+  }
+
+  return classNames.join(' ');
+}
+
 type ResultCardProps = {
   figure: Figure;
 };
@@ -291,7 +305,13 @@ type ResultCardProps = {
 function ResultCard({ figure }: ResultCardProps) {
   return (
     <div className="result-card" aria-live="polite">
-      <img className="result-card-rune" src={RESULT_RUNE_IMAGES[figure]} alt="" decoding="async" />
+      <img
+        className="result-card-rune"
+        src={RESULT_RUNE_IMAGES[figure]}
+        alt=""
+        decoding="async"
+        loading="eager"
+      />
       <p>{figure}</p>
     </div>
   );
