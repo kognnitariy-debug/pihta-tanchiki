@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { AUDIO_ASSETS, preloadAudio, setAudioMuted } from './audio';
+import { AUDIO_ASSETS, setAudioMuted, unlockAudio } from './audio';
 import { CreditsScreen } from './components/CreditsScreen';
 import { DebugScreen } from './components/DebugScreen';
 import { GameScreen } from './components/GameScreen';
@@ -36,7 +36,7 @@ export function App() {
   }, []);
 
   useEffect(() => {
-    const warmAudio = () => preloadAudio(audioSources);
+    const warmAudio = () => unlockAudio(audioSources);
 
     window.addEventListener('pointerdown', warmAudio, { once: true, passive: true });
     window.addEventListener('keydown', warmAudio, { once: true });
@@ -78,6 +78,10 @@ export function App() {
     const nextMuted = !isMuted;
     setIsMuted(nextMuted);
     setAudioMuted(nextMuted);
+
+    if (!nextMuted) {
+      unlockAudio(audioSources);
+    }
   }
 
   return (
