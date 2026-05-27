@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { CREDITS_AUDIO, CREDITS_FRAMES } from '../creditsData';
 
 const FRAME_DURATION = 5200;
@@ -13,10 +13,59 @@ export function CreditsScreen({ isMuted, onPlay }: CreditsScreenProps) {
   const [frameIndex, setFrameIndex] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
   const [typedLength, setTypedLength] = useState(0);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const frame = CREDITS_FRAMES[frameIndex];
   const typedCaption = useMemo(() => {
     return frame.caption.slice(0, typedLength);
   }, [frame.caption, typedLength]);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+
+    if (!audio) {
+      return;
+    }
+
+    audio.muted = isMuted;
+
+    if (isMuted) {
+      audio.pause();
+      return;
+    }
+
+    audio.play().catch(() => {
+      // На iOS/Safari музыка может стартовать только после следующего касания.
+    });
+  }, [isMuted]);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+
+    if (!audio || isMuted) {
+      return;
+    }
+
+    const creditsAudio = audio;
+
+    function tryPlayCreditsAudio() {
+      creditsAudio.play().catch(() => {
+        // Если браузер всё ещё блокирует autoplay, оставляем игру без падений.
+      });
+    }
+
+    creditsAudio.currentTime = 0;
+    creditsAudio.load();
+    tryPlayCreditsAudio();
+
+    window.addEventListener('pointerdown', tryPlayCreditsAudio, { once: true, passive: true });
+    window.addEventListener('keydown', tryPlayCreditsAudio, { once: true });
+
+    return () => {
+      window.removeEventListener('pointerdown', tryPlayCreditsAudio);
+      window.removeEventListener('keydown', tryPlayCreditsAudio);
+      creditsAudio.pause();
+    };
+  }, [isMuted]);
 
   useEffect(() => {
     if (isFinished) {
@@ -60,7 +109,7 @@ export function CreditsScreen({ isMuted, onPlay }: CreditsScreenProps) {
 
   return (
     <section className="screen credits-screen">
-      <audio autoPlay muted={isMuted}>
+      <audio autoPlay muted={isMuted} playsInline preload="auto" ref={audioRef}>
         <source src={CREDITS_AUDIO} type="audio/mpeg" />
       </audio>
 

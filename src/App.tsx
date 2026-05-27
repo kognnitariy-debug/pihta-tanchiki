@@ -8,6 +8,7 @@ import { OnlineGameScreen } from './components/OnlineGameScreen';
 import { OnlineLobby } from './components/OnlineLobby';
 import { RESULT_RUNE_IMAGES } from './assets';
 import { FIGURES } from './gameLogic';
+import { CREDITS_AUDIO } from './creditsData';
 import type { OnlinePlayer } from './online';
 import { preloadGameAssets, type PreloadProgress } from './preload';
 
@@ -34,6 +35,7 @@ export function App() {
       AUDIO_ASSETS.failedThrow,
       ...AUDIO_ASSETS.throwSounds,
       ...Object.values(AUDIO_ASSETS.figureVoices),
+      CREDITS_AUDIO,
     ];
   }, []);
 
