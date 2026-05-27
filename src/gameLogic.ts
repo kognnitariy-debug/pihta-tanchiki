@@ -117,7 +117,7 @@ export function throwKnife(state: GameState): GameState {
         : `Игрок ${state.currentPlayer + 1} собрал Бомбу и победил!`,
     mergeMessages,
     lastDroppedFigure: result,
-    lastDropPosition: createDropPosition(),
+    lastDropPosition: createDropPosition(result),
     lastThrowFailed: false,
     winner,
   };
@@ -174,17 +174,31 @@ function rollKnife(): RollResult {
   return 'Ноль';
 }
 
-function createDropPosition(): DropPosition {
+function createDropPosition(figure: Figure): DropPosition {
   const gridSize = 5;
-  const cell = 100 / gridSize;
+  const safeEdge = getDropSafeEdge(figure);
+  const playableSize = 100 - safeEdge * 2;
+  const cell = playableSize / gridSize;
   const column = Math.floor(Math.random() * gridSize);
   const row = Math.floor(Math.random() * gridSize);
-  const jitter = () => Math.random() * 8 - 4;
+  const jitter = () => Math.random() * 5 - 2.5;
 
   return {
-    x: Math.min(82, Math.max(18, column * cell + cell / 2 + jitter())),
-    y: Math.min(82, Math.max(18, row * cell + cell / 2 + jitter())),
+    x: clampDropCoordinate(safeEdge + column * cell + cell / 2 + jitter(), safeEdge),
+    y: clampDropCoordinate(safeEdge + row * cell + cell / 2 + jitter(), safeEdge),
   };
+}
+
+function getDropSafeEdge(figure: Figure): number {
+  if (figure === 'Подвода' || figure === 'Вертолёт') {
+    return 27;
+  }
+
+  return 33;
+}
+
+function clampDropCoordinate(value: number, safeEdge: number): number {
+  return Math.min(100 - safeEdge, Math.max(safeEdge, value));
 }
 
 function mergeFigures(counts: FigureCounts): string[] {
